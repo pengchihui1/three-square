@@ -31,7 +31,7 @@
 			let camera, scene, raycaster, renderer, stats;
 
 			const mouse = new THREE.Vector2();
-			let INTERSECTED;
+			let INTERSECTED;//當前點擊對象
 			const radius = 100;
 			let theta = 0;
 
@@ -53,15 +53,22 @@
 				light.position.set( 1, 1, 1 ).normalize();
 				scene.add( light );
 
+        // 添加空間到正方體
 				const geometry = new THREE.BoxGeometry( 20, 20, 20 );
-
-				for ( let i = 0; i < 1500; i ++ ) {
+        
+				// 設置個數
+				for ( let i = 0; i < 3; i ++ ) {
 
 					const object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
 
-					object.position.x = Math.random() * 800 - 400;
-					object.position.y = Math.random() * 800 - 400;
-					object.position.z = Math.random() * 800 - 400;
+					// object.position.x = Math.random() * 800 - 400;
+					// object.position.y = Math.random() * 800 - 400;
+					// object.position.z = Math.random() * 800 - 400;
+					
+					object.position.x = Math.random() * 100;
+					object.position.y = Math.random() * 100;
+					object.position.z = Math.random() * 100;
+
 
 					scene.add( object );
 
@@ -76,9 +83,17 @@
 
 				stats = new Stats();
 				document.body.appendChild( stats.dom );
+        
+				// 熒幕經過事件 用於設置INTERSECTED
+				document.addEventListener( 'mousemove', onDocumentMouseMove );
 
-				// document.addEventListener( 'mousemove', onDocumentMouseMove );
-				document.addEventListener( 'click', onDocumentMouseMove );
+				// 點擊事件
+				document.addEventListener('click', function(){
+					event.preventDefault();
+					if(INTERSECTED){
+						alert("點擊了")
+					}
+			  })
 
 				window.addEventListener( 'resize', onWindowResize );
 
@@ -154,8 +169,6 @@
 			}
 
 			function onDocumentMouseMove( event ) {
-				console.log("事件")
-
 				event.preventDefault();
 
 				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
@@ -172,9 +185,8 @@
 
 			}
 
-
 			function render() {
-
+				
 				theta += 0.1;
 
 				camera.position.x = radius * Math.sin( THREE.MathUtils.degToRad( theta ) );
@@ -192,15 +204,15 @@
 
 				if ( intersects.length > 0 ) {
 
-					const targetDistance = intersects[ 0 ].distance;
+					const targetDistance = intersects[0].distance;
 
 					camera.focusAt( targetDistance ); // using Cinematic camera focusAt method
 
-					if ( INTERSECTED != intersects[ 0 ].object ) {
+					if ( INTERSECTED != intersects[0].object ) {
 
 						if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
 
-						INTERSECTED = intersects[ 0 ].object;
+						INTERSECTED = intersects[0].object;
 						INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
 						INTERSECTED.material.emissive.setHex( 0xff0000 );
 
