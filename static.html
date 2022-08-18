@@ -64,7 +64,7 @@
 
     //创建一个平面
     function plane(){
-        var planeGeo = new THREE.PlaneGeometry(100,100,10,10);//创建平面
+        var planeGeo = new THREE.PlaneGeometry(150,150,10,10);//创建平面
         var planeMat = new THREE.MeshLambertMaterial({  //创建材料
             color:0x999999,
             wireframe:false
@@ -73,11 +73,14 @@
 
         planeMesh.position.set(0, 0, -20);//设置平面的坐标
         planeMesh.rotation.x = -0.5 * Math.PI;//将平面绕X轴逆时针旋转90度
+        // planeMesh.position.y = 10;
+        // planeMesh.position.z = 10;
         scene.add(planeMesh);//将平面添加到场景中
 
         // 網格狀地板
         const grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
         grid.material.opacity = 0.2;
+        
         grid.material.transparent = true;
         scene.add(grid);
     }
@@ -89,10 +92,10 @@
             var cubeMat = new THREE.MeshLambertMaterial({//创建材料
                 color:"red",
                 wireframe:false,
-                // name:""
             });
             var cubeMesh = new THREE.Mesh(cubeGeo, cubeMat);//创建立方体网格模型
             cubeMesh.position.set(10*i*4, 10*5,0);//设置立方体的坐标
+            cubeMesh.name=`cube${i+1}`
             scene.add(cubeMesh);//将立方体添加到场景中
         }
     }
@@ -134,15 +137,17 @@
         mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
         mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
+        // 获取鼠标点击的3D模型
         raycaster.setFromCamera( mouse, camera );
-   
         var intersects = raycaster.intersectObjects( scene.children, true );
     
         if ( intersects.length > 0 ) {
              // 點擊到3D內容
-            const targetDistance = intersects[0].distance;
-            if(targetDistance){
-                alert("點擊到內容了")
+            const object = intersects[0].object;
+            switch(object?.name){
+                case "cube1":alert("cube1");break;
+                case "cube2":alert("cube2");break;
+                case "cube3":alert("cube3");break;
             }
         }
     }
