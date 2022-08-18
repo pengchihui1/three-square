@@ -4,6 +4,8 @@
 3. 把三個立方體按了會有 alert 出來
 4. 把 html 放到 github 給我
 
+注意：不動的。三個一模一樣長寬高的
+
 ## 點擊事件
 https://blog.csdn.net/u010080492/article/details/78854226
 https://stackoverflow.com/questions/12800150/catch-the-click-event-on-a-specific-mesh-in-the-renderer
