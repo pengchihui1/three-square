@@ -21,6 +21,7 @@
   import { CinematicCamera } from 'https://cdn.jsdelivr.net/npm/three@0.124/examples/jsm/cameras/CinematicCamera.js';
    
     var camera, scene, renderer,raycaster,container,stats;
+   var pointer;
     let num = 0;
     const mouse = new THREE.Vector2();
 	let INTERSECTED;//當前點擊對象
@@ -38,16 +39,19 @@
 	    document.body.appendChild( stats.dom );
 
         scene = new THREE.Scene();//创建一个新场景
+        scene.background = new THREE.Color( 0xf0f0f0 );
+
         //添加一个透视相机
         camera = new THREE.PerspectiveCamera(30,window.innerWidth/window.innerHeight, 1, 400);
         camera.position.set(100, 200, 100);//设置相机位置
         camera.lookAt(new THREE.Vector3(0,0,0));//让相机指向原点
         //渲染
 
-        var axes = new THREE.AxisHelper(100);//参数设置了三条轴线的长度
-        scene.add(axes);
+        // var axes = new THREE.AxisHelper(100);//参数设置了三条轴线的长度
+        // scene.add(axes);
 
         raycaster = new THREE.Raycaster();//3d世界鼠標選中物體獲取器
+        pointer = new THREE.Vector2();//二维向量
 
         //antialias:true增加抗锯齿效果
         renderer = new THREE.WebGLRenderer({antialias:true});
@@ -64,6 +68,9 @@
         directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
         scene.add( directionalLight );
         renderer.domElement.addEventListener('click', onClick, false);
+
+        renderer.domElement.addEventListener( 'pointermove', onPointerMove );
+
         plane();
         cube();
         // sphere();
@@ -72,57 +79,48 @@
 
     //创建一个平面
     function plane(){
-        // var planeGeo = new THREE.PlaneGeometry(150,150,10,10);//创建四方形平面
-        // var planeMat = new THREE.MeshLambertMaterial({  //创建材料
-        //     color:0x999999,
-        //     wireframe:false
-        // });
-        // var planeMesh = new THREE.Mesh(planeGeo, planeMat);//创建网格模型
-
-        //     planeMesh.position.set(0, 0, -20);//设置平面的坐标
-        //     planeMesh.rotation.x = -0.5 * Math.PI;//将平面绕X轴逆时针旋转90度
-        //     // planeMesh.position.y = 10;
-        //     // planeMesh.position.z = 10;
-        //     scene.add(planeMesh);//将平面添加到场景中
-
-        //     // 網格狀地板
-        //     const grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
-        //     grid.material.opacity = 0.2;
-            
-        //     grid.material.transparent = true;
-        //     scene.add(grid);
-
       // 创建一个圆形平面，半径20，圆周方向细分数30
       var plane = new THREE.CircleGeometry(20,30)
       var material = new THREE.MeshPhongMaterial({
             color: 0x999999,
             // 矩形平面网格模型默认单面显示，可以设置side属性值为THREE.DoubleSide双面显示
             side: THREE.DoubleSide,
+            // visible: false
         });
         var mesh = new THREE.Mesh(plane, material);
         mesh.name=`plane`
         mesh.rotation.x = -0.5 * Math.PI;//将平面绕X轴逆时针旋转90度
+        mesh.position.y = -10;
+
         scene.add(mesh);//将平面添加到场景中
+  
+        const gridHelper = new THREE.GridHelper( 100, 20 );
+        scene.add( gridHelper );
+
     }
 
     //创建一个立方体
     function cube(){
-        console.log(scene.children)
-
         for(var i=0;i<3;i++){
-            var cubeGeo = new THREE.CubeGeometry(10, 10, 10, 5, 5, 5);//创建立方体
+            var cubeGeo = new THREE.CubeGeometry(10, 10, 10, 1, 1, 1);//创建立方体
             var cubeMat = new THREE.MeshLambertMaterial({//创建材料
                 color: Math.random() * 0xffffff,
                 wireframe:false,
             });
+
+            const randomPositon=[
+                Math.floor(Math.random() * 20+17.5),
+                Math.floor(Math.random() * -20-17.5),
+            ]
+            // console.log(randomPositon[Math.floor(Math.random() *2)])
+            // console.log(randomPositon[Math.floor(Math.random() * 2)])
             var cubeMesh = new THREE.Mesh(cubeGeo, cubeMat);//创建立方体网格模型
-            cubeMesh.position.set(Math.random() * 50,  Math.random() * 50,Math.random() * 50);//设置立方体的坐标
-            cubeMesh.name=`cube${i+1}`
+            cubeMesh.position.set(randomPositon[Math.floor(Math.random() *2)],  0,randomPositon[Math.floor(Math.random() *2)]);//设置立方体的坐标  x z
+            cubeMesh.name=`cube${i+1}`//設置模型名稱
             scene.add(cubeMesh);//将立方体添加到场景中
         }
     }
   
-
     //创建一个球
     function sphere(){
         var sphereGeo = new THREE.SphereGeometry(16, 40, 40);//创建球体
@@ -173,6 +171,7 @@
 
     // 移除事件
     function remove(object){
+        console.log(object)
         switch(object?.name){
             case "cube1":
                 scene.remove(object)
@@ -200,6 +199,16 @@
         stats.update();
     }
  
+
+    function onPointerMove(event) {
+        pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+        raycaster.setFromCamera( pointer, camera );
+        const intersects = raycaster.intersectObjects( scene.children, false );
+            if ( intersects.length > 0 ) {
+                const intersect = intersects[0];
+                render();
+            }
+        }
 </script>
 </body>
 </html>
