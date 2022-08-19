@@ -20,18 +20,23 @@
   import Stats from 'https://cdn.jsdelivr.net/npm/three@0.124/examples/jsm/libs/stats.module.js';
   import { CinematicCamera } from 'https://cdn.jsdelivr.net/npm/three@0.124/examples/jsm/cameras/CinematicCamera.js';
    
-    var camera, scene, renderer,raycaster,container;
-
+    var camera, scene, renderer,raycaster,container,stats;
+    let num = 0;
     const mouse = new THREE.Vector2();
 	let INTERSECTED;//當前點擊對象
     main();
-    render();
+    // render();
+    animate();
 
     //主函数
     function main(){
         //添加一个div元素
         container = document.createElement('div')
         document.body.appendChild(container);
+
+        stats = new Stats();
+	    document.body.appendChild( stats.dom );
+
         scene = new THREE.Scene();//创建一个新场景
         //添加一个透视相机
         camera = new THREE.PerspectiveCamera(30,window.innerWidth/window.innerHeight, 1, 1000);
@@ -56,7 +61,7 @@
         directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
         scene.add( directionalLight );
         renderer.domElement.addEventListener('click', onClick, false);
-        plane();
+        // plane();
         cube();
         // sphere();
         // cylinder();
@@ -88,13 +93,13 @@
     //创建一个立方体
     function cube(){
         for(var i=0;i<3;i++){
-            var cubeGeo = new THREE.CubeGeometry(20, 20, 20, 5, 5, 5);//创建立方体
+            var cubeGeo = new THREE.CubeGeometry(10, 10, 10, 5, 5, 5);//创建立方体
             var cubeMat = new THREE.MeshLambertMaterial({//创建材料
-                color:"red",
+                color: Math.random() * 0xffffff,
                 wireframe:false,
             });
             var cubeMesh = new THREE.Mesh(cubeGeo, cubeMat);//创建立方体网格模型
-            cubeMesh.position.set(10*i*4, 10*5,0);//设置立方体的坐标
+            cubeMesh.position.set(Math.random() * 50,  Math.random() * 50,Math.random() * 50);//设置立方体的坐标
             cubeMesh.name=`cube${i+1}`
             scene.add(cubeMesh);//将立方体添加到场景中
         }
@@ -144,12 +149,26 @@
         if ( intersects.length > 0 ) {
              // 點擊到3D內容
             const object = intersects[0].object;
-            switch(object?.name){
-                case "cube1":alert("cube1");break;
-                case "cube2":alert("cube2");break;
-                case "cube3":alert("cube3");break;
+            // 場景中移除點擊到的內容
+            scene.remove(object)
+            num++;
+           //   點擊數量夠了重新產生方塊
+            if(num>=3){
+                cube();
+                num=0
             }
+            // switch(object?.name){
+            //     case "cube1":alert("cube1");break;
+            //     case "cube2":alert("cube2");break;
+            //     case "cube3":alert("cube3");break;
+            // }
         }
+    }
+
+    function animate() {
+        requestAnimationFrame( animate, renderer.domElement );
+        render();
+        stats.update();
     }
  
 </script>
