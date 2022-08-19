@@ -17,6 +17,8 @@
 
 5. 不斷重複
 
+中間畫一個平面圓圈。我要消失重現的地方要在圓圈外面
+
 ## 點擊事件
 创建three小教程：https://blog.csdn.net/u010080492/article/details/78854226
 点击事件详细教程：https://www.jianshu.com/p/5ced65195566
