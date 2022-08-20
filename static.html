@@ -26,7 +26,11 @@
   import { GUI } from 'https://cdn.jsdelivr.net/npm/three@0.124/examples/jsm/libs/dat.gui.module.js';
   import Stats from 'https://cdn.jsdelivr.net/npm/three@0.124/examples/jsm/libs/stats.module.js';
   import { CinematicCamera } from 'https://cdn.jsdelivr.net/npm/three@0.124/examples/jsm/cameras/CinematicCamera.js';
-   
+  //import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/loaders/GLTFLoader.js";
+  import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js';
+  import { GLTFLoader } from './three/examples/jsm/loaders/GLTFLoader.js';
+
+
     var camera, scene, renderer,raycaster,container,stats,number;
     var score=0,seconds=30;
     var pointer;
@@ -67,9 +71,9 @@
         camera.lookAt(new THREE.Vector3(0,0,0));//让相机指向原点
         //渲染
 
-        var axes = new THREE.AxisHelper(100);//参数设置了三条轴线的长度
-        // axes.rotation.y =-0.5 * Math.PI;
-        scene.add(axes);
+        // var axes = new THREE.AxisHelper(100);//参数设置了三条轴线的长度
+        // // axes.rotation.y =-0.5 * Math.PI;
+        // scene.add(axes);
 
         raycaster = new THREE.Raycaster();//3d世界鼠標選中物體獲取器
         pointer = new THREE.Vector2();//二维向量
@@ -89,8 +93,12 @@
         directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
         scene.add( directionalLight );
         renderer.domElement.addEventListener('click', onClick, false);
-
         renderer.domElement.addEventListener( 'pointermove', onPointerMove );
+
+        // 三维控件
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.set(0, 0, 0);
+        controls.update();
 
         plane();
         cube();
@@ -116,7 +124,6 @@
   
         const gridHelper = new THREE.GridHelper( 100, 20 );
         scene.add( gridHelper );
-
     }
 
     //创建一个立方体
@@ -127,16 +134,38 @@
                 color: Math.random() * 0xffffff,
                 wireframe:false,
             });
-
-            const randomPositon=[
-                Math.floor(Math.random() * 20+17.5),
-                Math.floor(Math.random() * -20-17.5),
+            // 立方体
+            const randomPositons=[
+                Math.floor(Math.random() * 10+18),
+                Math.floor(Math.random() * -10-18),
             ]
    
             var cubeMesh = new THREE.Mesh(cubeGeo, cubeMat);//创建立方体网格模型
-            cubeMesh.position.set(randomPositon[Math.floor(Math.random() *2)],  0,randomPositon[Math.floor(Math.random() *2)]);//设置立方体的坐标  x z
+            cubeMesh.position.set(randomPositons[Math.floor(Math.random() *2)],  0,randomPositons[Math.floor(Math.random() *2)]);//设置立方体的坐标  x z
             cubeMesh.name=`cube${i+1}`//設置模型名稱
             scene.add(cubeMesh);//将立方体添加到场景中
+
+            // gltf文件 
+            const randomPositon=[
+                Math.floor(Math.random() * 10+25),
+                Math.floor(Math.random() * -10-25),
+            ]
+
+            const loader = new GLTFLoader().setPath('models/girl/');
+            
+
+            loader.load('scene.gltf', function (gltf) {
+                gltf.name=`cube${Math.floor(Math.random()*3+1)}`// 模型名字
+                // 设置模型缩放比例
+                gltf.scene.scale.set(0.05, 0.05, 0.05);
+                // 相对X轴旋转弧度(为了让模型加载为合适的姿势)
+                gltf.scene.position.set(randomPositon[Math.floor(Math.random()*2)] , 0 , randomPositon[Math.floor(Math.random()*2)])
+                // gltf.scene.rotation.x = -0.5 * Math.PI; // 旋转
+                gltf.scene.position.z = 0.8;
+                scene.add(gltf.scene);
+                render();
+            });
+
         }
     }
   
@@ -190,34 +219,42 @@
 
     // 移除事件
     function remove(object){
-   
-        switch(object?.name){
-            case "cube1":
-                score++
-                $("#score").text(`分数：${score||0}`)
-                scene.remove(object)
-                num++;
-                break;
-            case "cube2":
-                score++
-                $("#score").text(`分数：${score||0}`)
-                scene.remove(object)
-                num++;
-                break;
-            case "cube3":
-                score++
-                $("#score").text(`分数：${score||0}`)
-                scene.remove(object)
-                num++;
-                break;
+        if(object?.name.includes("mesh_")){
+            // object.clear()
+            score++
+            $("#score").text(`分数：${score||0}`)
+            num++;
         }
+        scene.remove(object);
+        // switch(object?.name){
+        //     case "cube1":
+        //         score++
+        //         $("#score").text(`分数：${score||0}`)
+        //         scene.remove(object)
+        //         num++;
+        //         break;
+        //     case "cube2":
+        //         score++
+        //         $("#score").text(`分数：${score||0}`)
+        //         scene.remove(object)
+        //         num++;
+        //         break;
+        //     case "cube3":
+        //         score++
+        //         $("#score").text(`分数：${score||0}`)
+        //         scene.remove(object)
+        //         num++;
+        //         break;
+        // }
         //   點擊數量夠了重新產生方塊
+
         if(num>=3){
             cube();
             num=0
         }
     }
 
+    // 持续更新
     function animate() {
         requestAnimationFrame( animate, renderer.domElement );
         render();
@@ -233,7 +270,8 @@
                 const intersect = intersects[0];
                 render();
             }
-        }
+     }
+   
 </script>
 </body>
 </html>
