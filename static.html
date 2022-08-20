@@ -14,20 +14,40 @@
 </head>
 <body>
 
+  <div style="font-size: 30px; position: fixed; right: 2vw; ">
+    <p id="seconds" style="border: 1px solid black; padding: 5px;">秒数：30</p>
+    <p id="score" style="border: 1px solid black; padding: 5px;">分数：0</p>
+  </div>
+
+<script src="https://lib.sinaapp.com/js/jquery/2.0.2/jquery-2.0.2.min.js"></script>
+
 <script type="module">
   import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.124/build/three.module.js';
   import { GUI } from 'https://cdn.jsdelivr.net/npm/three@0.124/examples/jsm/libs/dat.gui.module.js';
   import Stats from 'https://cdn.jsdelivr.net/npm/three@0.124/examples/jsm/libs/stats.module.js';
   import { CinematicCamera } from 'https://cdn.jsdelivr.net/npm/three@0.124/examples/jsm/cameras/CinematicCamera.js';
    
-    var camera, scene, renderer,raycaster,container,stats;
-   var pointer;
+    var camera, scene, renderer,raycaster,container,stats,number;
+    var score=0,seconds=30;
+    var pointer;
     let num = 0;
     const mouse = new THREE.Vector2();
 	let INTERSECTED;//當前點擊對象
     main();
     // render();
     animate();
+
+    window.timer =  setInterval(() => {
+        seconds -= 1;
+        $("#seconds").text(`秒数：${seconds||0}`)
+        if (seconds <= 0) {
+            score=0
+            seconds=30
+            $("#seconds").text(`秒数：${seconds}`)
+            $("#score").text(`分数：${score}`)
+            clearInterval( window.timer)
+        }
+    }, 1000);
 
     //主函数
     function main(){
@@ -47,8 +67,9 @@
         camera.lookAt(new THREE.Vector3(0,0,0));//让相机指向原点
         //渲染
 
-        // var axes = new THREE.AxisHelper(100);//参数设置了三条轴线的长度
-        // scene.add(axes);
+        var axes = new THREE.AxisHelper(100);//参数设置了三条轴线的长度
+        // axes.rotation.y =-0.5 * Math.PI;
+        scene.add(axes);
 
         raycaster = new THREE.Raycaster();//3d世界鼠標選中物體獲取器
         pointer = new THREE.Vector2();//二维向量
@@ -90,7 +111,6 @@
         var mesh = new THREE.Mesh(plane, material);
         mesh.name=`plane`
         mesh.rotation.x = -0.5 * Math.PI;//将平面绕X轴逆时针旋转90度
-        mesh.position.y = -10;
 
         scene.add(mesh);//将平面添加到场景中
   
@@ -112,8 +132,7 @@
                 Math.floor(Math.random() * 20+17.5),
                 Math.floor(Math.random() * -20-17.5),
             ]
-            // console.log(randomPositon[Math.floor(Math.random() *2)])
-            // console.log(randomPositon[Math.floor(Math.random() * 2)])
+   
             var cubeMesh = new THREE.Mesh(cubeGeo, cubeMat);//创建立方体网格模型
             cubeMesh.position.set(randomPositon[Math.floor(Math.random() *2)],  0,randomPositon[Math.floor(Math.random() *2)]);//设置立方体的坐标  x z
             cubeMesh.name=`cube${i+1}`//設置模型名稱
@@ -171,17 +190,23 @@
 
     // 移除事件
     function remove(object){
-        console.log(object)
+   
         switch(object?.name){
             case "cube1":
+                score++
+                $("#score").text(`分数：${score||0}`)
                 scene.remove(object)
                 num++;
                 break;
             case "cube2":
+                score++
+                $("#score").text(`分数：${score||0}`)
                 scene.remove(object)
                 num++;
                 break;
             case "cube3":
+                score++
+                $("#score").text(`分数：${score||0}`)
                 scene.remove(object)
                 num++;
                 break;
