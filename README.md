@@ -48,3 +48,5 @@ obj模型确实是会有位置属性的bug，所以在以后我们的开发中�
 ## Three.js加载gITF文件
 加载模型：https://juejin.cn/post/7026220849942233096
 资源占用时需要及时清除：https://blog.csdn.net/u014361280/article/details/124309410
+从三个 JS 的场景中删除组类型 GLTF 对象:https://stackoverflow.com/questions/52026728/removing-group-type-gltf-object-from-the-scene-in-three-js
+釋放內存：https://chowdera.com/2022/04/202204230516339358.html#

@@ -37,6 +37,8 @@
     let num = 0;
     const mouse = new THREE.Vector2();
 	let INTERSECTED;//當前點擊對象
+
+    const GLTFloader = new GLTFLoader().setPath('models/girl/');
     main();
     // render();
     animate();
@@ -65,15 +67,20 @@
         scene = new THREE.Scene();//创建一个新场景
         scene.background = new THREE.Color( 0xf0f0f0 );
 
-        //添加一个透视相机
-        camera = new THREE.PerspectiveCamera(30,window.innerWidth/window.innerHeight, 1, 400);
-        camera.position.set(100, 200, 100);//设置相机位置
-        camera.lookAt(new THREE.Vector3(0,0,0));//让相机指向原点
-        //渲染
+        //添加一个透视相机   多少度视角，相机的宽高比，从距离相机多远的位置开始渲染，距离相机多远的位置截止渲染
+        camera = new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight, 1, 500);
+        // camera = new THREE.PerspectiveCamera(10,window.innerWidth/window.innerHeight, 1, 10);
+        camera.position.set(0, 1, 40); //设置相机位置
+        // camera.up.x = 0;
+        // camera.up.y = 0;
+        // camera.up.z = 0;
 
-        // var axes = new THREE.AxisHelper(100);//参数设置了三条轴线的长度
-        // // axes.rotation.y =-0.5 * Math.PI;
-        // scene.add(axes);
+       
+        
+        // 渲染
+        var axes = new THREE.AxisHelper(100);//参数设置了三条轴线的长度
+        // axes.rotation.y =-0.5 * Math.PI;
+        scene.add(axes);
 
         raycaster = new THREE.Raycaster();//3d世界鼠標選中物體獲取器
         pointer = new THREE.Vector2();//二维向量
@@ -84,13 +91,20 @@
         renderer.setSize(window.innerWidth, window.innerHeight);//设置窗口尺寸
         //将renderer关联到container，这个过程类似于获取canvas元素
         container.appendChild(renderer.domElement);
+      
         //给场景添加光源
+
+        // var light= new THREE.PointLight(0xffffff);
+        // light.position.set(100,100,100);
+        // scene.add(light);  
+
         //自然光
         var ambientLight = new THREE.AmbientLight( 0x606060 );
         scene.add( ambientLight );
+
         //平行光源
         var directionalLight = new THREE.DirectionalLight( 0xffffff );
-        directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
+        directionalLight.position.set( 0, 0, 0).normalize();
         scene.add( directionalLight );
         renderer.domElement.addEventListener('click', onClick, false);
         renderer.domElement.addEventListener( 'pointermove', onPointerMove );
@@ -126,7 +140,43 @@
         scene.add( gridHelper );
     }
 
-    //创建一个立方体
+    // 检查数组内是否重复
+    function checkInArr(arr,rnd){
+        for(var i = 0; i < arr.length; i++){
+            if(rnd === arr[i]){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    function random(state,value,min) {
+        switch(state){
+            case 0: //x z
+            value=value
+            min=min
+            break;
+            case 1: //x -z 
+            value=value
+            min=-min
+            break;
+            case 2: // -x z
+            value=-value
+            min=min
+            break;
+            case 3: // -x -z
+            value=-value
+            min=-min
+            break;
+        }
+        return Math.floor(Math.random() * value+min);
+    }
+
+    let GLTFobjects=[]//模型對象
+    let result=[]//隨機數字不重複
+    //  创建一个立方体
+
     function cube(){
         for(var i=0;i<3;i++){
             var cubeGeo = new THREE.CubeGeometry(10, 10, 10, 1, 1, 1);//创建立方体
@@ -134,38 +184,48 @@
                 color: Math.random() * 0xffffff,
                 wireframe:false,
             });
-            // 立方体
-            const randomPositons=[
-                Math.floor(Math.random() * 10+18),
-                Math.floor(Math.random() * -10-18),
-            ]
-   
-            var cubeMesh = new THREE.Mesh(cubeGeo, cubeMat);//创建立方体网格模型
-            cubeMesh.position.set(randomPositons[Math.floor(Math.random() *2)],  0,randomPositons[Math.floor(Math.random() *2)]);//设置立方体的坐标  x z
-            cubeMesh.name=`cube${i+1}`//設置模型名稱
-            scene.add(cubeMesh);//将立方体添加到场景中
-
-            // gltf文件 
-            const randomPositon=[
-                Math.floor(Math.random() * 10+25),
-                Math.floor(Math.random() * -10-25),
-            ]
-
-            const loader = new GLTFLoader().setPath('models/girl/');
             
+            // // 立方体
+            // const randomPositons=[
+            //     Math.floor(Math.random() * 10+18),
+            //     Math.floor(Math.random() * -10-18),
+            // ]
+   
+            // var cubeMesh = new THREE.Mesh(cubeGeo, cubeMat);//创建立方体网格模型
+            // cubeMesh.position.set(randomPositons[Math.floor(Math.random() *2)],  0,randomPositons[Math.floor(Math.random() *2)]);//设置立方体的坐标  x z
+            // cubeMesh.name=`cube${i+1}`//設置模型名稱
+            // scene.add(cubeMesh);//将立方体添加到场景中
 
-            loader.load('scene.gltf', function (gltf) {
-                gltf.name=`cube${Math.floor(Math.random()*3+1)}`// 模型名字
-                // 设置模型缩放比例
-                gltf.scene.scale.set(0.05, 0.05, 0.05);
-                // 相对X轴旋转弧度(为了让模型加载为合适的姿势)
-                gltf.scene.position.set(randomPositon[Math.floor(Math.random()*2)] , 0 , randomPositon[Math.floor(Math.random()*2)])
-                // gltf.scene.rotation.x = -0.5 * Math.PI; // 旋转
-                gltf.scene.position.z = 0.8;
+            const position=[]
+            for(let k=0;k<2;k++){
+                const positionIndex= Math.floor(Math.random() * 4)
+                position.push(random(positionIndex,10,27))
+            }
+    
+           // gltf文件 
+            GLTFloader.load('scene.gltf', function (gltf) {
+                    // 设置模型缩放比例
+                    gltf.scene.scale.set(0.05, 0.05, 0.05);
+                    // 相对X轴旋转弧度(为了让模型加载为合适的姿势)
+                    gltf.scene.position.set(position[0],0, position[1])
+                    // gltf.scene.rotation.x = -0.5 * Math.PI; // 旋转
+                    gltf.scene.lookAt(new THREE.Vector3(0, 0, 0))//模型看向中心
+                    let value = Math.floor(Math.random() * 3)
+                    while (checkInArr(result,value)) {
+                        value = Math.floor(Math.random() * 3)
+                    }
+                    result.push(value)
+                    gltf.scene.traverse( function ( child ) {
+                        // console.log("加載模型",`cube${value}`)
+                        child.name=`cube${value}`
+                        if(child.type === "Group") {
+                            GLTFobjects.push(child);
+                        }
+                    });
                 scene.add(gltf.scene);
                 render();
-            });
-
+            }
+            );
         }
     }
   
@@ -213,43 +273,37 @@
         if ( intersects.length > 0 ) {
              // 點擊到3D內容
             const object = intersects[0].object;
-            remove(object)
+            removeEvent(object)
         }
     }
 
     // 移除事件
-    function remove(object){
-        if(object?.name.includes("mesh_")){
-            // object.clear()
+    function removeEvent(object){
+        // 點擊模型坐標
+        const gltfIndex=GLTFobjects.findIndex(gltf=>gltf.name==object.name)
+        if(gltfIndex!=-1){
             score++
             $("#score").text(`分数：${score||0}`)
             num++;
+            scene.remove(GLTFobjects[gltfIndex]);
+            console.log(GLTFobjects[gltfIndex].type)
+            scene.traverse((child) => {
+               
+            if (child.material) {
+                child.material.dispose();
+            }
+            if (child.geometry) {
+                child.geometry.dispose();
+            }
+            child = null;
+            });
         }
-        scene.remove(object);
-        // switch(object?.name){
-        //     case "cube1":
-        //         score++
-        //         $("#score").text(`分数：${score||0}`)
-        //         scene.remove(object)
-        //         num++;
-        //         break;
-        //     case "cube2":
-        //         score++
-        //         $("#score").text(`分数：${score||0}`)
-        //         scene.remove(object)
-        //         num++;
-        //         break;
-        //     case "cube3":
-        //         score++
-        //         $("#score").text(`分数：${score||0}`)
-        //         scene.remove(object)
-        //         num++;
-        //         break;
-        // }
-        //   點擊數量夠了重新產生方塊
-
         if(num>=3){
-            cube();
+            // console.log("重新開始")
+            result=[]
+            GLTFobjects=[]
+            cube();//重新創建對象
+            // console.log("創建模型後")
             num=0
         }
     }
@@ -260,8 +314,8 @@
         render();
         stats.update();
     }
- 
 
+    // 鼠標經過事件
     function onPointerMove(event) {
         pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
         raycaster.setFromCamera( pointer, camera );
@@ -271,7 +325,14 @@
                 render();
             }
      }
-   
+
+    //  釋放空間
+     function destory(){
+        scene.clear();
+		renderer.dispose();
+		renderer.content = null;
+     }
+
 </script>
 </body>
 </html>
